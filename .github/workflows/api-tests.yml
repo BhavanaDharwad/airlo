@@ -1,0 +1,32 @@
+name: API Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run API tests
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          OAUTH_GRANT_TYPE: client_credentials
+        run: npm run test:api
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mochawesome-report
+          path: mochawesome-report/
+          retention-days: 1
